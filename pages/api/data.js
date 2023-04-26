@@ -20,38 +20,57 @@
   
 // });
 
-const abletonParser = require('ableton-parser');
+// const abletonParser = require('ableton-parser');
 
-export default async function handler(req, res) {
-  try {
-    const { file } = req.body;
+// export default async function handler(req, res) {
+//   try {
+//     const { file } = req.body;
 
-    console.log('eu')
+//     console.log('eu')
 
-    if (!file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
+//     if (!file) {
+//       return res.status(400).json({ message: "No file uploaded" });
+//     }
 
-    console.log('hola soy data')
+//     console.log('hola soy data')
 
-    //const buffer = Buffer.from(file.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-    // Assuming the uploaded file is in base64 format, decode it into a buffer.
+//     //const buffer = Buffer.from(file.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+//     // Assuming the uploaded file is in base64 format, decode it into a buffer.
 
-    // abletonParser.parseFile(buffer).then((res) => {
-    //   const arrayTracks = res.getTracks();
+//     abletonParser.parseFile(buffer).then((res) => {
+//       const arrayTracks = res.getTracks();
     
-    //   arrayTracks[0].AudioTrack.forEach(element => {
-    //     console.log(element.Name[0].EffectiveName[0].$.Value);
-    //   });
+//       arrayTracks[0].AudioTrack.forEach(element => {
+//         console.log(element.Name[0].EffectiveName[0].$.Value);
+//       });
 
-    //   arrayTracks[0].MidiTrack.forEach(element => {
-    //     console.log(element.Name[0].EffectiveName[0].$.Value);
-    //   });
+//       arrayTracks[0].MidiTrack.forEach(element => {
+//         console.log(element.Name[0].EffectiveName[0].$.Value);
+//       });
   
-    //   res.status(200).json({ message: "File processed successfully" });
-    // });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-}
+//       res.status(200).json({ message: "File processed successfully" });
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// }
+
+module.exports = async function parseAbletonFile(url) {
+  const abletonParser = require('als-parser');
+
+  const res = await abletonParser.parseFile(url);
+  const arrayTracks = res.getTracks();
+
+  const audioTracksNames = arrayTracks[0].AudioTrack.map(
+    (element) => element.Name[0].EffectiveName[0].$.Value
+  );
+  const midiTracksNames = arrayTracks[0].MidiTrack.map(
+    (element) => element.Name[0].EffectiveName[0].$.Value
+  );
+
+  return {
+    audioTracksNames,
+    midiTracksNames,
+  };
+};

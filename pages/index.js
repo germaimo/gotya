@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { storage } from "../lib/firebase.js";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState("");
@@ -8,30 +10,23 @@ export default function Home() {
     selectedFile?.name !== undefined && setSelectedFileName(selectedFile.name);
   }, [selectedFile]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    if (selectedFile === "") return;
+    console.log(selectedFile);
+    const imageRef = ref(storage, `proyectosals/${selectedFile.name}`);
+
     try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-
-      const res = await fetch("/api/data", {
-        method: "POST",
-        body: formData,
+      await uploadBytes(imageRef, selectedFile).then((snapshot) => {
+        getDownloadURL(snapshot.ref).then((url) => {
+          console.log(url);
+        });
       });
-
-      console.log(res);
-
-      if (res.status === 200) {
-        console.log("File processed successfully");
-      } else {
-        console.log("Error processing file");
-      }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const removeFile = () =>{
+  const removeFile = () => {
     setSelectedFile("");
     setSelectedFileName("");
   };
@@ -39,23 +34,25 @@ export default function Home() {
   return (
     <div className="App">
       <header className="App-header">
-        {selectedFileName !== "" ? (
+        {selectedFile !== "" ? (
           <div>
             <p>{selectedFileName}</p>
-            <button onClick={ removeFile } >eliminar archivo seleccionado</button>
+            <button onClick={removeFile}>eliminar archivo seleccionado</button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
+          <>
             <input
               type="file"
               value={""}
               onChange={(e) => setSelectedFile(e.target.files[0])}
             />
-            <button type="submit">Submit</button>
-          </form>
+          </>
         )}
+        <br />
+        <button onClick={handleSubmit} type="submit">
+          Subir
+        </button>
       </header>
     </div>
   );
-
 }
