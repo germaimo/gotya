@@ -5,6 +5,8 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState("");
   const [selectedFileName, setSelectedFileName] = useState("");
+  const [url, setUrl] = useState("");
+  const [parsedData, setParsedData] = useState(null); // nueva variable de estado
 
   useEffect(() => {
     selectedFile?.name !== undefined && setSelectedFileName(selectedFile.name);
@@ -18,7 +20,7 @@ export default function Home() {
     try {
       await uploadBytes(imageRef, selectedFile).then((snapshot) => {
         getDownloadURL(snapshot.ref).then((url) => {
-          console.log(url);
+          setUrl(url);
         });
       });
     } catch (err) {
@@ -30,6 +32,22 @@ export default function Home() {
     setSelectedFile("");
     setSelectedFileName("");
   };
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch("http://localhost:3000?urlFile=" + url);
+        const data = await response.json();
+        console.log(data);
+        //setParsedData(data); // actualizar el estado con los datos analizados
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    url !== "" && fetchData();
+  }, [url]);
+
 
   return (
     <div className="App">
@@ -52,6 +70,13 @@ export default function Home() {
         <button onClick={handleSubmit} type="submit">
           Subir
         </button>
+        {parsedData && ( // mostrar los datos analizados si existen
+          <ul>
+            {parsedData.audioTrackNames.map((name) => (
+              <li key={name}>{name}</li>
+            ))}
+          </ul>
+        )}
       </header>
     </div>
   );

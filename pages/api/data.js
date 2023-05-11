@@ -1,76 +1,18 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import abletonParser from 'ableton-parser';
 
-// export default function handler(req, res) {
-//   res.status(200).json({ name: 'John Doe', age: 30  })
-// }
+export default async function handler(req, res) {
+  const { url } = req.query;
 
-// const abletonParser = require('ableton-parser');
+  try {
+    const data = await abletonParser.parseFile(url);
+    const audioTrackNames = data.getTracks()[0].AudioTrack.map((track) => track.Name[0].EffectiveName[0].$.Value);
+    const midiTrackNames = data.getTracks()[0].MidiTrack.map((track) => track.Name[0].EffectiveName[0].$.Value);
 
-// abletonParser.parseFile('../2canales-midi-audio-sinclips.als').then((res) => {
-    
-//     const arrayTracks = res.getTracks();
-    
-//     arrayTracks[0].AudioTrack.forEach(element => {
-//         console.log(element.Name[0].EffectiveName[0].$.Value);
-//     });
-
-//     arrayTracks[0].MidiTrack.forEach(element => {
-//         console.log(element.Name[0].EffectiveName[0].$.Value);
-//     });
+    res.status(200).json({ audioTrackNames, midiTrackNames });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal Server Error' });
   
-// });
+  }
 
-// const abletonParser = require('ableton-parser');
-
-// export default async function handler(req, res) {
-//   try {
-//     const { file } = req.body;
-
-//     console.log('eu')
-
-//     if (!file) {
-//       return res.status(400).json({ message: "No file uploaded" });
-//     }
-
-//     console.log('hola soy data')
-
-//     //const buffer = Buffer.from(file.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-//     // Assuming the uploaded file is in base64 format, decode it into a buffer.
-
-//     abletonParser.parseFile(buffer).then((res) => {
-//       const arrayTracks = res.getTracks();
-    
-//       arrayTracks[0].AudioTrack.forEach(element => {
-//         console.log(element.Name[0].EffectiveName[0].$.Value);
-//       });
-
-//       arrayTracks[0].MidiTrack.forEach(element => {
-//         console.log(element.Name[0].EffectiveName[0].$.Value);
-//       });
-  
-//       res.status(200).json({ message: "File processed successfully" });
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// }
-
-module.exports = async function parseAbletonFile(url) {
-  const abletonParser = require('als-parser');
-
-  const res = await abletonParser.parseFile(url);
-  const arrayTracks = res.getTracks();
-
-  const audioTracksNames = arrayTracks[0].AudioTrack.map(
-    (element) => element.Name[0].EffectiveName[0].$.Value
-  );
-  const midiTracksNames = arrayTracks[0].MidiTrack.map(
-    (element) => element.Name[0].EffectiveName[0].$.Value
-  );
-
-  return {
-    audioTracksNames,
-    midiTracksNames,
-  };
-};
+}
