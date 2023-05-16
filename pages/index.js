@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
-import { storage } from "../lib/firebase.js";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-//import abletonParser from 'ableton-parser';
-import axios from 'axios';
+import axios from "axios";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState("");
@@ -16,22 +13,8 @@ export default function Home() {
 
   const handleSubmit = async () => {
     if (selectedFile === "") return;
-    console.log( "soy selected file", selectedFile);
-    fileHandleParse(selectedFile)
-    
-    //const imageRef = ref(storage, `proyectosals/${selectedFile.name}`);
+    fileHandleParse(selectedFile);
 
-    
-
-    // try {
-    //   await uploadBytes(imageRef, selectedFile).then((snapshot) => {
-    //     getDownloadURL(snapshot.ref).then((url) => {
-    //       setUrl(url);
-    //     });
-    //   });
-    // } catch (err) {
-    //   console.error(err);
-    // }
   };
 
   const removeFile = () => {
@@ -55,34 +38,23 @@ export default function Home() {
   }, [url]);
 
   const fileHandleParse = async (selectedFileParam) => {
-try{
-  //const handlerFile = await axios.post('/api/data.js', selectedFile);
-  //an axios call to the api to the handler function
-  console.log("soy selected file param", selectedFileParam);
-  const handlerFile = await axios.post('api/data', selectedFileParam);
+    try {
 
-  //send to axios the selected file
-
-  //console.log(handlerFile);
-
-
-}catch(err){
-  console.log(err)
-}
-
-    // try {
-    //   const data = await abletonParser.parseFile(selectedFile);
-    //   const audioTrackNames = data.getTracks()[0].AudioTrack.map((track) => track.Name[0].EffectiveName[0].$.Value);
-    //   const midiTrackNames = data.getTracks()[0].MidiTrack.map((track) => track.Name[0].EffectiveName[0].$.Value);
-    //   console.log('audio', audioTrackNames);
-    //   console.log('midi', midiTrackNames);
-    //   //res.status(200).json({ audioTrackNames, midiTrackNames });
-    // } catch (err) {
-    //   console.error(err);
-    //   //res.status(500).json({ error: 'Internal Server Error' });
+      const formData = new FormData();
+      formData.append('file', selectedFileParam);
     
-    // }
-  }
+      const response = await axios.post('/api/data', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      console.log(response.data);
+      //send to axios the selected file
+      console.log(handlerFile);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <div className="App">
